@@ -1,0 +1,36 @@
+﻿image: docker:latest
+
+services:
+  - docker:dind
+
+variables:
+  DOCKER_HOST: tcp://docker:2375
+  DOCKER_TLS_CERTDIR: ""
+
+stages:
+  - build
+  - test
+  - deploy
+
+before_script:
+  - docker info
+
+build:
+  stage: build
+  script:
+    - docker-compose build --parallel
+  artifacts:
+    expire_in: 1h
+    paths:
+      - .
+
+test:
+  stage: test
+  script:
+    - echo 'No tests yet — will add as we go'
+
+deploy:
+  stage: deploy
+  script:
+    - echo 'Deploy step — to be implemented'
+  when: manual
