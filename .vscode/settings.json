@@ -1,0 +1,6 @@
+{
+  // Подключаем JSON-схему GitHub Actions для файлов в workflows
+  "yaml.schemas": {
+    "https://json.schemastore.org/github-workflow.json": ".github/workflows/*.yml"
+  }
+}
