@@ -1,0 +1,38 @@
+﻿version: '3.8'
+
+services:
+  auth:
+    build: ./services/auth
+    container_name: auth
+    ports:
+      - "4000:4000"
+    environment:
+      - NODE_ENV=development
+      - PORT=4000
+
+  user:
+    build: ./services/user
+    container_name: user
+    ports:
+      - "4001:4001"
+    environment:
+      - NODE_ENV=development
+      - PORT=4001
+    depends_on:
+      - auth
+
+  diagnostics:
+    build: ./services/diagnostics
+    container_name: diagnostics
+    ports:
+      - "4002:4002"
+    environment:
+      - NODE_ENV=development
+      - PORT=4002
+    depends_on:
+      - auth
+      - user
+
+networks:
+  default:
+    driver: bridge
