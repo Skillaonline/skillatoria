@@ -36,11 +36,15 @@ jobs:
         run: |
          REPO_NAME_LOWER=$(echo "${{ github.event.repository.name }}" | tr '[:upper:]' '[:lower:]')
          OWNER_LOWER=$(echo "${{ env.OWNER }}" | tr '[:upper:]' '[:lower:]')
+
          for svc in auth user diagnostics; do
-          IMAGE=${{ env.REGISTRY }}/${OWNER_LOWER}/${REPO_NAME_LOWER}-${svc}:latest
-          echo "Tagging and pushing $IMAGE"
-          docker tag $svc $IMAGE
-          docker push $IMAGE
+          LOCAL_TAG=$(docker compose images --format "{{.Repository}}:{{.Tag}}" $svc | head -n 1)
+          REMOTE_TAG=${{ env.REGISTRY }}/${OWNER_LOWER}/${REPO_NAME_LOWER}-${svc}:latest
+          
+          echo "Retagging $LOCAL_TAG → $REMOTE_TAG"
+          docker tag "$LOCAL_TAG" "$REMOTE_TAG"
+          echo "Pushing $REMOTE_TAG"
+          docker push "$REMOTE_TAG"
           done
 
   test:
