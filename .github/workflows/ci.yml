@@ -9,6 +9,7 @@ on:
 env:
   REGISTRY: ghcr.io
   OWNER: ${{ secrets.CR_OWNER }}
+  SLACK_WEBHOOK_URL: ${{ secrets.SLACK_WEBHOOK_URL }}
 
 jobs:
   build:
@@ -96,12 +97,14 @@ jobs:
     runs-on: ubuntu-latest
     steps:
       - name: Send Slack notification
-        if: ${{ secrets.SLACK_WEBHOOK_URL != '' }}
+        if: ${{ env.SLACK_WEBHOOK_URL != '' }}
+        env:
+          WEBHOOK: ${{ env.SLACK_WEBHOOK_URL }}
         run: |
           STATUS="✅ SUCCESS"
           if [ "${{ needs.test.result }}" != "success" ]; then STATUS="❌ FAILURE"; fi
           PAYLOAD="{\"text\":\"CI/CD pipeline *${STATUS}* for *${{ github.repository }}* (<${{ github.server_url }}/${{ github.repository }}/actions/runs/${{ github.run_id }}|details>)\"}"
-          curl -X POST -H 'Content-Type: application/json' --data "$PAYLOAD" ${{ secrets.SLACK_WEBHOOK_URL }}
+          curl -X POST -H 'Content-Type: application/json' --data "$PAYLOAD" "$WEBHOOK"
 
   deploy:
     if: github.event_name == 'push'
