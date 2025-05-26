@@ -60,28 +60,39 @@ jobs:
         options: --privileged
         ports: [ 2375:2375 ]
     env:
-      DOCKER_HOST: tcp://localhost:2375
+      DOCKER_HOST: tcp://docker:2375
       DOCKER_TLS_CERTDIR: ""
+      
     steps:
       - uses: actions/checkout@v3
 
       - name: Wait for Docker dind ready
-        run: for i in {1..15}; do docker info && break || sleep 1; done
+        run: | 
+          export DOCKER_HOST=tcp://docker:2375
+          for i in {1..20}; do
+            docker info && break || sleep 1
+          done
 
       - name: Build services for test (cached)
-        run: docker compose build auth user diagnostics
+        run: | 
+          export DOCKER_HOST=tcp://docker:2375
+          docker compose build auth user diagnostics
 
       - name: Start services
-        run: docker compose up -d auth user diagnostics
+        run: |
+          export DOCKER_HOST=tcp://docker:2375
+          docker compose up -d auth user diagnostics
 
       - name: Health-checks
         run: |
-          curl --retry 5 --retry-connrefused http://localhost:4000/health
-          curl --retry 5 --retry-connrefused http://localhost:4001/health
-          curl --retry 5 --retry-connrefused http://localhost:4002/health
+          curl --retry 10 --retry-connrefused http://localhost:4000/health
+          curl --retry 10 --retry-connrefused http://localhost:4001/health
+          curl --retry 10 --retry-connrefused http://localhost:4002/health
 
       - name: Teardown
-        run: docker compose down
+        run: | 
+          export DOCKER_HOST=tcp://docker:2375
+          docker compose down
 
 # ────────── 3. NOTIFY (опционально Slack) ───────────────────────────────────────
   notify:
