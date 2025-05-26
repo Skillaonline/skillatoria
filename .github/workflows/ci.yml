@@ -8,7 +8,7 @@ on:
 
 env:
   REGISTRY: ghcr.io
-  OWNER: ${{ secrets.CR_OWNER }}
+  OWNER: ${{ github.repository_owner }}
   SLACK_WEBHOOK_URL: ${{ secrets.SLACK_WEBHOOK_URL }}
 
 jobs:
@@ -34,10 +34,12 @@ jobs:
 
       - name: Tag & push images
         run: |
-          for svc in auth user diagnostics; do
-            IMG=${REGISTRY}/${OWNER}/ld-platform-$svc:latest
-            docker tag $svc $IMG
-            docker push $IMG
+         REPO_NAME=${{ github.event.repository.name }}
+         for svc in auth user diagnostics; do
+          IMAGE=${REGISTRY}/${OWNER}/${REPO_NAME}-$svc:latest
+          echo "Tagging and pushing $IMAGE"
+          docker tag $svc $IMAGE
+          docker push $IMAGE
           done
 
   test:
